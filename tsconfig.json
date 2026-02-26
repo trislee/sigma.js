@@ -5,45 +5,6 @@
     {
       "path": "./packages/demo"
     },
-    {
-      "path": "./packages/test"
-    },
-    {
-      "path": "./packages/storybook"
-    },
-    {
-      "path": "./packages/sigma"
-    },
-    {
-      "path": "./packages/layer-leaflet"
-    },
-    {
-      "path": "./packages/layer-maplibre"
-    },
-    {
-      "path": "./packages/layer-webgl"
-    },
-    {
-      "path": "./packages/node-border"
-    },
-    {
-      "path": "./packages/node-image"
-    },
-    {
-      "path": "./packages/node-piechart"
-    },
-    {
-      "path": "./packages/node-square"
-    },
-    {
-      "path": "./packages/edge-curve"
-    },
-    {
-      "path": "./packages/utils"
-    },
-    {
-      "path": "./packages/export-image"
-    }
   ],
   "watchOptions": {
     "excludeDirectories": ["**/node_modules"]
