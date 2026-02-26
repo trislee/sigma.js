@@ -17,7 +17,8 @@ import GraphEventsController from "./GraphEventsController";
 import GraphSettingsController from "./GraphSettingsController";
 import GraphTitle from "./GraphTitle";
 import SearchField from "./SearchField";
-import TagsPanel from "./TagsPanel";
+import Navbar from "./Navbar";
+import About from "./About";
 
 const Root: FC = () => {
   const graph = useMemo(() => new DirectedGraph(), []);
@@ -26,9 +27,9 @@ const Root: FC = () => {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [filtersState, setFiltersState] = useState<FiltersState>({
     clusters: {},
-    tags: {},
   });
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"speakers" | "descriptions" | "about">("speakers");
   const sigmaSettings: Partial<Settings> = useMemo(
     () => ({
       nodeProgramClasses: {
@@ -42,63 +43,90 @@ const Root: FC = () => {
       defaultEdgeType: "arrow",
       labelDensity: 0.07,
       labelGridCellSize: 60,
-      labelRenderedSizeThreshold: 15,
+      labelRenderedSizeThreshold: dataset?.labelThreshold || 15,
       labelFont: "Lato, sans-serif",
       zIndex: true,
     }),
-    [],
+    [dataset?.labelThreshold],
   );
 
-  // Load data on mount:
+  /**
+   * Initialize active tab from URL hash, defaulting to "speakers":
+   */
   useEffect(() => {
-    fetch(`./dataset.json`)
+    const validTabs: ("speakers" | "descriptions" | "about")[] = ["speakers", "descriptions", "about"];
+
+    const getTabFromHash = (): "speakers" | "descriptions" | "about" => {
+      const hash = window.location.hash.slice(1); // Remove the '#'
+      return validTabs.includes(hash as any) ? (hash as "speakers" | "descriptions" | "about") : "speakers";
+    };
+
+    // Set initial tab from hash
+    const initialTab = getTabFromHash();
+    setActiveTab(initialTab);
+
+    // If no hash or invalid hash, set default hash (using replaceState to avoid triggering hashchange)
+    const currentHash = window.location.hash.slice(1);
+    if (!currentHash || !validTabs.includes(currentHash as any)) {
+      window.history.replaceState(null, "", "#speakers");
+    }
+
+    // Listen for hash changes (back/forward buttons)
+    const handleHashChange = () => {
+      const newTab = getTabFromHash();
+      setActiveTab(newTab);
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  /**
+   * Update URL hash when activeTab changes (from user interaction):
+   */
+  useEffect(() => {
+    const currentHash = window.location.hash.slice(1);
+    if (currentHash !== activeTab) {
+      window.location.hash = activeTab;
+    }
+  }, [activeTab]);
+
+  // Load data when activeTab changes (only for speakers/descriptions):
+  useEffect(() => {
+    if (activeTab === "about") {
+      return;
+    }
+    setDataReady(false);
+    const jsonFile = activeTab === "speakers" ? "speakers.json" : "descriptions.json";
+    fetch(`./${jsonFile}`)
       .then((res) => res.json())
       .then((dataset: Dataset) => {
-        const clusters = keyBy(dataset.clusters, "key");
-        const tags = keyBy(dataset.tags, "key");
-
-        dataset.nodes.forEach((node) =>
-          graph.addNode(node.key, {
-            ...node,
-            ...omit(clusters[node.cluster], "key"),
-            image: `./images/${tags[node.tag].image}`,
-          }),
-        );
-        dataset.edges.forEach(([source, target]) => graph.addEdge(source, target, { size: 1 }));
-
-        // Use degrees as node sizes:
-        const scores = graph.nodes().map((node) => graph.getNodeAttribute(node, "score"));
-        const minDegree = Math.min(...scores);
-        const maxDegree = Math.max(...scores);
-        const MIN_NODE_SIZE = 3;
-        const MAX_NODE_SIZE = 30;
-        graph.forEachNode((node) =>
-          graph.setNodeAttribute(
-            node,
-            "size",
-            ((graph.getNodeAttribute(node, "score") - minDegree) / (maxDegree - minDegree)) *
-              (MAX_NODE_SIZE - MIN_NODE_SIZE) +
-              MIN_NODE_SIZE,
-          ),
-        );
-
         setFiltersState({
           clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
-          tags: mapValues(keyBy(dataset.tags, "key"), constant(true)),
         });
         setDataset(dataset);
         requestAnimationFrame(() => setDataReady(true));
       });
-  }, []);
+  }, [activeTab]);
+
+  if (activeTab === "about") {
+    return (
+      <div id="app-root">
+        <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
+        <About />
+      </div>
+    );
+  }
 
   if (!dataset) return null;
 
   return (
     <div id="app-root" className={showContents ? "show-contents" : ""}>
+      <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
       <SigmaContainer graph={graph} settings={sigmaSettings} className="react-sigma">
         <GraphSettingsController hoveredNode={hoveredNode} />
         <GraphEventsController setHoveredNode={setHoveredNode} />
-        <GraphDataController filters={filtersState} />
+        <GraphDataController dataset={dataset} filters={filtersState} />
 
         {dataReady && (
           <>
@@ -135,10 +163,10 @@ const Root: FC = () => {
                   <GrClose />
                 </button>
               </div>
-              <GraphTitle filters={filtersState} />
+              <GraphTitle filters={filtersState} activeTab={activeTab} />
               <div className="panels">
                 <SearchField filters={filtersState} />
-                <DescriptionPanel />
+                <DescriptionPanel activeTab={activeTab} />
                 <ClustersPanel
                   clusters={dataset.clusters}
                   filters={filtersState}
@@ -156,22 +184,7 @@ const Root: FC = () => {
                         : { ...filters.clusters, [cluster]: true },
                     }));
                   }}
-                />
-                <TagsPanel
-                  tags={dataset.tags}
-                  filters={filtersState}
-                  setTags={(tags) =>
-                    setFiltersState((filters) => ({
-                      ...filters,
-                      tags,
-                    }))
-                  }
-                  toggleTag={(tag) => {
-                    setFiltersState((filters) => ({
-                      ...filters,
-                      tags: filters.tags[tag] ? omit(filters.tags, tag) : { ...filters.tags, [tag]: true },
-                    }));
-                  }}
+                  activeTab={activeTab}
                 />
               </div>
             </div>

@@ -7,7 +7,12 @@ function prettyPercentage(val: number): string {
   return (val * 100).toFixed(1) + "%";
 }
 
-const GraphTitle: FC<{ filters: FiltersState }> = ({ filters }) => {
+const TITLES = {
+  speakers: "Speakers at NICAR conference sessions",
+  descriptions: "Topics discussed at NICAR conference sessions",
+};
+
+const GraphTitle: FC<{ filters: FiltersState; activeTab: "speakers" | "descriptions" }> = ({ filters, activeTab }) => {
   const sigma = useSigma();
   const graph = sigma.getGraph();
 
@@ -26,8 +31,8 @@ const GraphTitle: FC<{ filters: FiltersState }> = ({ filters }) => {
 
   return (
     <div className="graph-title">
-      <h1>A cartography of Wikipedia pages around data visualization</h1>
-      <h2>
+      <h2>{TITLES[activeTab]}</h2>
+      <h3>
         <i>
           {graph.order} node{graph.order > 1 ? "s" : ""}{" "}
           {visibleItems.nodes !== graph.order
@@ -39,7 +44,7 @@ const GraphTitle: FC<{ filters: FiltersState }> = ({ filters }) => {
             ? ` (only ${prettyPercentage(visibleItems.edges / graph.size)} visible)`
             : ""}
         </i>
-      </h2>
+      </h3>
     </div>
   );
 };

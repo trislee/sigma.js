@@ -12,7 +12,8 @@ const ClustersPanel: FC<{
   filters: FiltersState;
   toggleCluster: (cluster: string) => void;
   setClusters: (clusters: Record<string, boolean>) => void;
-}> = ({ clusters, filters, toggleCluster, setClusters }) => {
+  activeTab: "speakers" | "descriptions";
+}> = ({ clusters, filters, toggleCluster, setClusters, activeTab }) => {
   const sigma = useSigma();
   const graph = sigma.getGraph();
 
@@ -42,11 +43,17 @@ const ClustersPanel: FC<{
     [clusters, nodesPerCluster],
   );
 
+  const panelTitle = activeTab === "speakers" ? "Outlets" : "Clusters";
+  const descriptionText =
+    activeTab === "speakers"
+      ? "Click an outlet to show/hide related speakers from the network. Outlets are determined by the primary affiliation listed for each speaker."
+      : "Click a cluster to show/hide related entities from the network. Cluster names were chosen to best describe most entities within the cluster, but do not always perfectly describe all entities within the cluster.";
+
   return (
     <Panel
       title={
         <>
-          <MdGroupWork className="text-muted" /> Clusters
+          <MdGroupWork className="text-muted" /> {panelTitle}
           {visibleClustersCount < clusters.length ? (
             <span className="text-muted text-small">
               {" "}
@@ -59,7 +66,7 @@ const ClustersPanel: FC<{
       }
     >
       <p>
-        <i className="text-muted">Click a cluster to show/hide related pages from the network.</i>
+        <i className="text-muted">{descriptionText}</i>
       </p>
       <p className="buttons">
         <button className="btn" onClick={() => setClusters(mapValues(keyBy(clusters, "key"), () => true))}>
@@ -78,11 +85,7 @@ const ClustersPanel: FC<{
               className="caption-row"
               key={cluster.key}
               title={`${nodesCount} page${nodesCount > 1 ? "s" : ""}${
-                visibleNodesCount !== nodesCount
-                  ? visibleNodesCount > 0
-                    ? ` (only ${visibleNodesCount > 1 ? `${visibleNodesCount} are` : "one is"} visible)`
-                    : " (all hidden)"
-                  : ""
+                visibleNodesCount !== nodesCount ? ` (only ${visibleNodesCount} visible)` : ""
               }`}
             >
               <input
