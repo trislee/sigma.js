@@ -519,7 +519,10 @@ ul > li {
 
   #app-root.show-contents .contents {
     position: absolute;
-    inset: 0;
+    top: var(--navbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
     overflow-y: auto;
     scrollbar-width: thin;
     background: var(--transparent-white);
@@ -542,6 +545,12 @@ ul > li {
     position: absolute;
     top: var(--stage-padding);
     right: var(--stage-padding);
+  }
+
+  /* About page: content must start below navbar; flex-start so padding pushes content down */
+  .about-page {
+    align-items: flex-start;
+    padding-top: var(--navbar-height);
   }
 }
 @media (min-width: 768px) {
