@@ -36,7 +36,7 @@ const GraphSettingsController: FC<PropsWithChildren<{ hoveredNode: string | null
             graph.hasEdge(node, debouncedHoveredNode) ||
             graph.hasEdge(debouncedHoveredNode, node)
             ? { ...data, zIndex: 1, size: displaySize }
-            : { ...data, zIndex: 0, label: "", color: NODE_FADE_COLOR, image: null, highlighted: false, size: displaySize };
+            : { ...data, zIndex: 0, label: "", color: NODE_FADE_COLOR, highlighted: false, size: displaySize };
         }
         return { ...data, size: displaySize };
       },
@@ -69,7 +69,7 @@ const GraphSettingsController: FC<PropsWithChildren<{ hoveredNode: string | null
             graph.hasEdge(node, debouncedHoveredNode) ||
             graph.hasEdge(debouncedHoveredNode, node)
               ? { ...data, zIndex: 1, size: displaySize }
-              : { ...data, zIndex: 0, label: "", color: NODE_FADE_COLOR, image: null, highlighted: false, size: displaySize };
+              : { ...data, zIndex: 0, label: "", color: NODE_FADE_COLOR, highlighted: false, size: displaySize };
         }
         return { ...data, size: displaySize };
       },

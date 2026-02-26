@@ -1,5 +1,4 @@
 import { FullScreenControl, SigmaContainer, ZoomControl } from "@react-sigma/core";
-import { createNodeImageProgram } from "@sigma/node-image";
 import Graph from "graphology";
 import { constant, keyBy, mapValues, omit } from "lodash";
 import { FC, useEffect, useMemo, useState } from "react";
@@ -33,14 +32,8 @@ const Root: FC = () => {
   const [activeTab, setActiveTab] = useState<"speakers" | "descriptions" | "about">("speakers");
   const sigmaSettings: Partial<Settings> = useMemo(
     () => ({
-      nodeProgramClasses: {
-        image: createNodeImageProgram({
-          size: { mode: "force", value: 256 },
-        }),
-      },
       defaultDrawNodeLabel: drawLabel,
       defaultDrawNodeHover: drawHover,
-      defaultNodeType: "image",
       defaultEdgeColor: "#999",
       labelColor: { color: "#000" },
       labelDensity: 0.07,
@@ -99,6 +92,7 @@ const Root: FC = () => {
     if (activeTab === "about") {
       return;
     }
+    setHoveredNode(null);
     setDataReady(false);
     const jsonFile = activeTab === "speakers" ? "speakers.json" : "descriptions.json";
     fetch(`./${jsonFile}`)

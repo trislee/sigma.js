@@ -29,6 +29,8 @@ const GraphDataController: FC<PropsWithChildren<{ dataset: Dataset | null; filte
       (sigma as any).setCustomBBox(dataset.bbox);
     }
 
+    sigma.getCamera().animatedReset({ duration: 0 });
+
     return () => graph.clear();
   }, [graph, dataset, sigma]);
 
