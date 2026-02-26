@@ -20,6 +20,15 @@ import Navbar from "./Navbar";
 import About from "./About";
 import { IS_MOBILE } from "../is-mobile";
 
+const VALID_TABS = ["speakers", "descriptions", "about"] as const;
+type Tab = (typeof VALID_TABS)[number];
+
+function getTabFromHash(): Tab {
+  if (typeof window === "undefined") return "speakers";
+  const hash = window.location.hash.slice(1);
+  return VALID_TABS.includes(hash as Tab) ? (hash as Tab) : "speakers";
+}
+
 const Root: FC = () => {
   const graph = useMemo(() => new Graph(), []);
   const [showContents, setShowContents] = useState(false);
@@ -29,7 +38,7 @@ const Root: FC = () => {
     clusters: {},
   });
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"speakers" | "descriptions" | "about">("speakers");
+  const [activeTab, setActiveTab] = useState<Tab>(getTabFromHash);
   const sigmaSettings: Partial<Settings> = useMemo(
     () => ({
       defaultDrawNodeLabel: drawLabel,
@@ -46,31 +55,14 @@ const Root: FC = () => {
     [dataset?.labelThreshold],
   );
 
-  /**
-   * Initialize active tab from URL hash, defaulting to "speakers":
-   */
   useEffect(() => {
-    const validTabs: ("speakers" | "descriptions" | "about")[] = ["speakers", "descriptions", "about"];
-
-    const getTabFromHash = (): "speakers" | "descriptions" | "about" => {
-      const hash = window.location.hash.slice(1); // Remove the '#'
-      return validTabs.includes(hash as any) ? (hash as "speakers" | "descriptions" | "about") : "speakers";
-    };
-
-    // Set initial tab from hash
-    const initialTab = getTabFromHash();
-    setActiveTab(initialTab);
-
-    // If no hash or invalid hash, set default hash (using replaceState to avoid triggering hashchange)
     const currentHash = window.location.hash.slice(1);
-    if (!currentHash || !validTabs.includes(currentHash as any)) {
+    if (!currentHash || !VALID_TABS.includes(currentHash as Tab)) {
       window.history.replaceState(null, "", "#speakers");
     }
 
-    // Listen for hash changes (back/forward buttons)
     const handleHashChange = () => {
-      const newTab = getTabFromHash();
-      setActiveTab(newTab);
+      setActiveTab(getTabFromHash());
     };
 
     window.addEventListener("hashchange", handleHashChange);
