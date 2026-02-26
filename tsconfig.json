@@ -1,15 +1,13 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": [],
-  "references": [
-    {
-      "path": "./packages/demo"
-    },
-  ],
-  "watchOptions": {
-    "excludeDirectories": ["**/node_modules"]
-  },
+  "compileOnSave": false,
+  "include": ["src"],
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "rootDir": "./src",
+    "outDir": "build",
+    "declaration": false,
+    "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false
   }
 }
