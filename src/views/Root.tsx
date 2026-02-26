@@ -48,6 +48,7 @@ const Root: FC = () => {
       labelRenderedSizeThreshold: (dataset?.labelThreshold ?? 15) * (IS_MOBILE ? 0.5 : 1),
       labelFont: "Lato, sans-serif",
       zIndex: true,
+      minEdgeThickness: IS_MOBILE ? 0.75 : 1.5,
     }),
     [dataset?.labelThreshold],
   );

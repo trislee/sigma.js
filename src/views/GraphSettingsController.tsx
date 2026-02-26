@@ -8,6 +8,7 @@ import useDebounce from "../use-debounce";
 
 const NODE_FADE_COLOR = "#bbb";
 const EDGE_FADE_COLOR = "#eee";
+const EDGE_SIZE_HIGHLIGHT = 4;
 
 const GraphSettingsController: FC<PropsWithChildren<{ hoveredNode: string | null }>> = ({ children, hoveredNode }) => {
   const sigma = useSigma();
@@ -40,12 +41,14 @@ const GraphSettingsController: FC<PropsWithChildren<{ hoveredNode: string | null
         return { ...data, size: displaySize };
       },
       edgeReducer: (edge: string, data: Attributes) => {
+        const displaySize = IS_MOBILE ? (data.size ?? 1) * 0.5 : data.size;
+        const highlightSize = IS_MOBILE ? EDGE_SIZE_HIGHLIGHT * 0.5 : EDGE_SIZE_HIGHLIGHT;
         if (debouncedHoveredNode) {
           return graph.hasExtremity(edge, debouncedHoveredNode)
-            ? { ...data, color: hoveredColor, size: 4 }
+            ? { ...data, color: hoveredColor, size: highlightSize }
             : { ...data, color: EDGE_FADE_COLOR, hidden: true };
         }
-        return data;
+        return { ...data, size: displaySize };
       },
     });
   }, [sigma, graph, debouncedHoveredNode]);
@@ -71,14 +74,18 @@ const GraphSettingsController: FC<PropsWithChildren<{ hoveredNode: string | null
         return { ...data, size: displaySize };
       },
     );
+    const edgeHighlightSize = IS_MOBILE ? EDGE_SIZE_HIGHLIGHT * 0.5 : EDGE_SIZE_HIGHLIGHT;
     sigma.setSetting(
       "edgeReducer",
-      debouncedHoveredNode
-        ? (edge, data) =>
-            graph.hasExtremity(edge, debouncedHoveredNode)
-              ? { ...data, color: hoveredColor, size: 4 }
-              : { ...data, color: EDGE_FADE_COLOR, hidden: true }
-        : null,
+      (edge: string, data: Attributes) => {
+        const displaySize = IS_MOBILE ? (data.size ?? 1) * 0.5 : data.size;
+        if (debouncedHoveredNode) {
+          return graph.hasExtremity(edge, debouncedHoveredNode)
+            ? { ...data, color: hoveredColor, size: edgeHighlightSize }
+            : { ...data, color: EDGE_FADE_COLOR, hidden: true };
+        }
+        return { ...data, size: displaySize };
+      },
     );
   }, [sigma, graph, debouncedHoveredNode]);
 
