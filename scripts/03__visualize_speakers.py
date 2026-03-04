@@ -29,17 +29,16 @@ if __name__ == "__main__":
     ).reset_index(drop=True)
     _edges_df = nx.to_pandas_edgelist(G=G)
 
-    nodes_df = _nodes_df[["x", "y", "label", "size", "affiliation"]]
-    edges_df = _edges_df[["source", "target", "weight"]]
+    nodes_df = _nodes_df[["x", "y", "label", "size", "affiliation"]].copy()
+    edges_df = _edges_df[["source", "target", "weight"]].copy()
 
-    nodes_df["cluster"] = nodes_df["affiliation"]
-    nodes_df["cluster"].fillna("Other", inplace=True)
-    nodes_df.drop("affiliation", axis="columns", inplace=True)
+    nodes_df["cluster"] = nodes_df["affiliation"].fillna("Other")
+    nodes_df = nodes_df.drop(columns=["affiliation"])
 
     label_to_index = {t[0] : i for i, t in enumerate(Counter(list(edges_df['source']) + list(edges_df['target'])).most_common())}
 
-    nodes_df["key"] = nodes_df['label'].map(label_to_index)
-    nodes_df["size"] /= NODE_SCALING
+    nodes_df["key"] = nodes_df["label"].map(label_to_index)
+    nodes_df["size"] = nodes_df["size"] / NODE_SCALING
     nodes = nodes_df.to_dict(orient="records")
 
     edges = [[label_to_index[e["source"]], label_to_index[e["target"]], e["weight"]] for e in edges_df.to_dict(orient="records")]

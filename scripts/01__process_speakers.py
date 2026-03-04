@@ -252,18 +252,13 @@ if __name__ == "__main__":
     for rank, (node, score) in enumerate(top10, start=1):
         print(f"{rank:<6} {str(node):<20} {score * 100:.2f}%")
 
-    for i, name in enumerate(nx.shortest_path(G=_G, source="Callum Thomson", target="Audrey Nielsen", weight = None)):
+    for i, name in enumerate(nx.shortest_path(G=_G, source="Jeremy Thompson", target="Haley Parsley", weight = None)):
         print(f"{i}. {name}")
 
     number_of_sessions = dict(Counter(chain.from_iterable(all_session_names)))
     nx.set_node_attributes(G=_G, values=number_of_sessions, name="sessions")
     nx.set_node_attributes(G=_G, values={k :v **0.5 for k, v in number_of_sessions.items()}, name="sessions_root_2")
     nx.set_node_attributes(G=_G, values=name_to_employer, name = "affiliation")
-
-    print("\neccentricities\n")
-    eccentricities = dict(nx.eccentricity(_G))
-    for name, ecc in sorted(eccentricities.items(), key = lambda item : item[1], reverse=True)[:10]:
-        print(name, ecc)
 
     GRAPHML_DIR.mkdir(exist_ok=True)
     nx.write_graphml(G=_G, path = GRAPHML_DIR / "speakers_raw.graphml")
